@@ -150,6 +150,34 @@ python -m cli.main     # alternative: run directly from source
 ```
 You will see a screen where you can select your desired tickers, analysis date, LLM provider, research depth, and more.
 
+### Web CLI in Docker
+
+If you want a browser-based terminal, the repository now includes a Docker web
+launcher powered by `ttyd`. It keeps a small menu open in the browser so users
+can start and stop the agent without rebuilding the container.
+
+1. Copy the example environment file and add your API keys:
+```bash
+cp .env.example .env
+```
+2. Optional: protect the browser terminal with basic auth by setting
+   `WEB_CLI_USER` and `WEB_CLI_PASSWORD` in `.env`.
+3. Start the web terminal:
+```bash
+docker compose up --build tradingagents-web
+```
+4. Open `http://localhost:7681` in your browser.
+
+Inside the browser session:
+- choose `1` to launch `tradingagents`
+- press `Ctrl+C` to stop the current agent run and return to the launcher
+- choose `2` if you want a shell inside the container
+- stop the service with `docker compose down`
+
+Warning: the web terminal exposes a live shell into the container. Keep it on a
+trusted network and set `WEB_CLI_USER` / `WEB_CLI_PASSWORD` before exposing it
+outside your machine.
+
 <p align="center">
   <img src="assets/cli/cli_init.png" width="100%" style="display: inline-block; margin: 0 2%;">
 </p>

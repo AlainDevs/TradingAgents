@@ -1,20 +1,34 @@
-# Use Python 3.13 as specified in their conda instructions
-FROM python:3.13-slim
+FROM python:3.13-slim AS base
 
-# Set the working directory
 WORKDIR /app
 
-# Install system dependencies (if any are needed for package building)
-RUN apt-get update && apt-get install -y --no-install-recommends gcc && rm -rf /var/lib/apt/lists/*
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# Copy the dependency files first to leverage Docker cache
-COPY requirements.txt pyproject.toml ./
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends bash gcc \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install the package and its dependencies
+# Copy only the files needed to install the package to keep the build cache warm.
+COPY pyproject.toml README.md ./
+COPY cli ./cli
+COPY tradingagents ./tradingagents
+COPY main.py ./main.py
+
 RUN pip install --no-cache-dir .
 
-# Copy the rest of the application code
-COPY . .
-
-# Set default command (Running the CLI module directly)
 CMD ["python", "-m", "cli.main"]
+
+FROM tsl0922/ttyd:latest AS ttyd-binary
+
+FROM base AS web
+
+COPY --from=ttyd-binary /usr/bin/ttyd /usr/local/bin/ttyd
+COPY docker/web_entrypoint.sh /usr/local/bin/web_entrypoint.sh
+COPY docker/web_terminal.sh /usr/local/bin/web_terminal.sh
+
+RUN chmod +x /usr/local/bin/web_entrypoint.sh /usr/local/bin/web_terminal.sh
+
+EXPOSE 7681
+
+CMD ["/usr/local/bin/web_entrypoint.sh"]

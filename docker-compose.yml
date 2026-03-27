@@ -11,3 +11,20 @@ services:
     # Keeps the container running interactively if you want to attach to it
     stdin_open: true 
     tty: true
+
+  tradingagents-web:
+    build:
+      context: .
+      target: web
+    container_name: tradingagents_web
+    env_file:
+      - .env
+    environment:
+      WEB_CLI_USER: ${WEB_CLI_USER:-}
+      WEB_CLI_PASSWORD: ${WEB_CLI_PASSWORD:-}
+    ports:
+      - "${WEB_CLI_PORT:-7681}:7681"
+    volumes:
+      - ./data_cache:/app/data_cache
+    stdin_open: true
+    tty: true
