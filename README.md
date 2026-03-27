@@ -123,6 +123,7 @@ TradingAgents supports multiple LLM providers. Set the API key for your chosen p
 
 ```bash
 export OPENAI_API_KEY=...          # OpenAI (GPT)
+export OPENAI_BASE_URL=...         # Optional OpenAI-compatible base URL
 export GOOGLE_API_KEY=...          # Google (Gemini)
 export ANTHROPIC_API_KEY=...       # Anthropic (Claude)
 export XAI_API_KEY=...             # xAI (Grok)
@@ -131,6 +132,9 @@ export ALPHA_VANTAGE_API_KEY=...   # Alpha Vantage
 ```
 
 For local models, configure Ollama with `llm_provider: "ollama"` in your config.
+
+If you use an OpenAI-compatible provider, set `OPENAI_BASE_URL` in `.env`
+instead of hardcoding the URL in source.
 
 Alternatively, copy `.env.example` to `.env` and fill in your keys:
 ```bash
@@ -191,6 +195,7 @@ config = DEFAULT_CONFIG.copy()
 config["llm_provider"] = "openai"        # openai, google, anthropic, xai, openrouter, ollama
 config["deep_think_llm"] = "gpt-5.2"     # Model for complex reasoning
 config["quick_think_llm"] = "gpt-5-mini" # Model for quick tasks
+config["backend_url"] = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 config["max_debate_rounds"] = 2
 
 ta = TradingAgentsGraph(debug=True, config=config)

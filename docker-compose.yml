@@ -1,0 +1,13 @@
+services:
+  tradingagents:
+    build: .
+    container_name: tradingagents_cli
+    env_file:
+      - .env
+    # The repo mentions a 'data_cache' in their .gitignore, 
+    # so we can map a volume to persist data across container restarts
+    volumes:
+      - ./data_cache:/app/data_cache
+    # Keeps the container running interactively if you want to attach to it
+    stdin_open: true 
+    tty: true
