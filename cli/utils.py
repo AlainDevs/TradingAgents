@@ -1,13 +1,23 @@
-import questionary
-from typing import List, Optional, Tuple, Dict
-
 import os
+from typing import Dict, List, Optional, Tuple
+
+import questionary
 
 from rich.console import Console
 
 from cli.models import AnalystType
 
 console = Console()
+
+DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1"
+
+PROVIDER_BASE_URLS = {
+    "google": "https://generativelanguage.googleapis.com/v1",
+    "anthropic": "https://api.anthropic.com/",
+    "xai": "https://api.x.ai/v1",
+    "openrouter": "https://openrouter.ai/api/v1",
+    "ollama": "http://localhost:11434/v1",
+}
 
 TICKER_INPUT_EXAMPLES = "Examples: SPY, CNC.TO, 7203.T, 0700.HK"
 
@@ -266,15 +276,15 @@ def select_deep_thinking_agent(provider) -> str:
 
 def select_llm_provider() -> tuple[str, str]:
     """Select the OpenAI api url using interactive selection."""
-    # Define OpenAI api options with their corresponding endpoints
-    openai_base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+    # Build the displayed URLs from the same resolver used at runtime so the
+    # selected OpenAI option always reflects OPENAI_BASE_URL.
     BASE_URLS = [
-        ("OpenAI", openai_base_url),
-        ("Google", "https://generativelanguage.googleapis.com/v1"),
-        ("Anthropic", "https://api.anthropic.com/"),
-        ("xAI", "https://api.x.ai/v1"),
-        ("Openrouter", "https://openrouter.ai/api/v1"),
-        ("Ollama", "http://localhost:11434/v1"),
+        ("OpenAI", resolve_provider_backend_url("openai")),
+        ("Google", resolve_provider_backend_url("google")),
+        ("Anthropic", resolve_provider_backend_url("anthropic")),
+        ("xAI", resolve_provider_backend_url("xai")),
+        ("Openrouter", resolve_provider_backend_url("openrouter")),
+        ("Ollama", resolve_provider_backend_url("ollama")),
     ]
     
     choice = questionary.select(
@@ -298,9 +308,29 @@ def select_llm_provider() -> tuple[str, str]:
         exit(1)
     
     display_name, url = choice
-    print(f"You selected: {display_name}\tURL: {url}")
+    console.print(f"You selected: {display_name}\tURL: {url}")
 
     return display_name, url
+
+
+def resolve_provider_backend_url(
+    provider: str,
+    backend_url: Optional[str] = None,
+) -> str:
+    """Resolve the effective backend URL for a provider.
+
+    OpenAI always prefers an explicit backend URL, then OPENAI_BASE_URL,
+    and finally the native OpenAI endpoint.
+    """
+    provider_lower = provider.lower()
+
+    if provider_lower == "openai":
+        return backend_url or os.getenv(
+            "OPENAI_BASE_URL",
+            DEFAULT_OPENAI_BASE_URL,
+        )
+
+    return backend_url or PROVIDER_BASE_URLS[provider_lower]
 
 
 def ask_openai_reasoning_effort() -> str:
