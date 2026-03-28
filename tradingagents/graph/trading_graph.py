@@ -129,6 +129,8 @@ class TradingAgentsGraph:
         self.curr_state = None
         self.ticker = None
         self.log_states_dict = {}  # date to full state dict
+        self.run_output_dir = self.config.get("run_output_dir")
+        self.graph_log_dir = self.config.get("graph_log_dir")
 
         # Set up the graph
         self.graph = self.graph_setup.setup_graph(selected_analysts)
@@ -259,14 +261,16 @@ class TradingAgentsGraph:
         }
 
         # Save to file
-        directory = Path(f"eval_results/{self.ticker}/TradingAgentsStrategy_logs/")
+        if self.graph_log_dir:
+            directory = Path(self.graph_log_dir)
+        else:
+            directory = Path(
+                f"eval_results/{self.ticker}/TradingAgentsStrategy_logs/"
+            )
         directory.mkdir(parents=True, exist_ok=True)
 
-        with open(
-            f"eval_results/{self.ticker}/TradingAgentsStrategy_logs/full_states_log_{trade_date}.json",
-            "w",
-            encoding="utf-8",
-        ) as f:
+        log_path = directory / f"full_states_log_{trade_date}.json"
+        with open(log_path, "w", encoding="utf-8") as f:
             json.dump(self.log_states_dict, f, indent=4)
 
     def reflect_and_remember(self, returns_losses):

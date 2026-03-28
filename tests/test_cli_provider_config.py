@@ -1,8 +1,9 @@
 import os
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
-from cli.main import get_retry_delay_seconds
+from cli.main import build_worker_command, get_retry_delay_seconds
 from cli.utils import DEFAULT_OPENAI_BASE_URL, resolve_provider_backend_url
 
 
@@ -42,6 +43,15 @@ class CliProviderConfigTests(unittest.TestCase):
         self.assertEqual(get_retry_delay_seconds(2), 2)
         self.assertEqual(get_retry_delay_seconds(3), 4)
         self.assertEqual(get_retry_delay_seconds(10), 30)
+
+    def test_build_worker_command_passes_only_request_file_argument(self):
+        request_file = Path("results/runs/demo/request.json")
+
+        command = build_worker_command(request_file)
+
+        self.assertEqual(command[1:3], ["-m", "cli.run_worker"])
+        self.assertEqual(command[-1], str(request_file))
+        self.assertNotIn("run-request", command)
 
 
 if __name__ == "__main__":

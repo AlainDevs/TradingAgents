@@ -178,6 +178,14 @@ Warning: the web terminal exposes a live shell into the container. Keep it on a
 trusted network and set `WEB_CLI_USER` / `WEB_CLI_PASSWORD` before exposing it
 outside your machine.
 
+Web runs now use per-run isolation for result safety:
+- each launched analysis gets its own run id
+- each run executes in a separate subprocess
+- logs, reports, cache files, and graph state logs are written under
+  `results/runs/<run_id>/`
+- users may still share the same `.env` credentials, but concurrent runs should
+  not overwrite each other's outputs or vendor configuration
+
 <p align="center">
   <img src="assets/cli/cli_init.png" width="100%" style="display: inline-block; margin: 0 2%;">
 </p>

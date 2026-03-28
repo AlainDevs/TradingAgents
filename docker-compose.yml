@@ -4,10 +4,9 @@ services:
     container_name: tradingagents_cli
     env_file:
       - .env
-    # The repo mentions a 'data_cache' in their .gitignore, 
-    # so we can map a volume to persist data across container restarts
+    # Persist isolated run outputs on the host.
     volumes:
-      - ./data_cache:/app/data_cache
+      - ./results:/app/results
     # Keeps the container running interactively if you want to attach to it
     stdin_open: true 
     tty: true
@@ -25,6 +24,6 @@ services:
     ports:
       - "${WEB_CLI_PORT:-7681}:7681"
     volumes:
-      - ./data_cache:/app/data_cache
+      - ./results:/app/results
     stdin_open: true
     tty: true
